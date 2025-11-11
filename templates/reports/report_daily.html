@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Ежедневный отчёт — {{ date|date:"d.m.Y" }}</h1>
+
+<div class="card glass" style="margin-bottom:16px;">
+  <p style="margin:0 0 8px 0">
+    <strong>Всего продаж:</strong> {{ sales.count }}<br>
+    <strong>Сумма:</strong> {{ total }} ₽
+  </p>
+
+  <h4 style="margin:12px 0 6px">По способам оплаты:</h4>
+  <ul style="margin:0; padding-left:18px">
+    {% for row in by_pm %}
+      <li>{{ row.payment_method|default:"—" }} — <b>{{ row.sum }} ₽</b></li>
+    {% empty %}
+      <li>Нет данных</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="card glass">
+  <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div style="display:flex;gap:12px;align-items:center;">
+      <label style="display:flex;gap:8px;align-items:center;">
+        <input type="checkbox" id="checkAll">
+        <span>Выбрать все</span>
+      </label>
+      <span id="selCount" style="opacity:.7;">0 выбрано</span>
+    </div>
+
+    <!-- Кнопка всегда видна; если прав нет — неактивна, подсказываем почему -->
+    <button id="deleteSelected"
+            class="btn"
+            data-has-perm="{% if perms.sales.delete_sale %}1{% else %}0{% endif %}"
+            title="{% if perms.sales.delete_sale %}Удалить выбранные продажи{% else %}Нет права на удаление (sales.delete_sale){% endif %}">
+      🗑️ Удалить выбранные
+    </button>
+  </div>
+
+  <table id="salesTable">
+    <thead>
+      <tr>
+        <th style="width:1%;"></th>
+        <th>Время</th>
+        <th>Продавец</th>
+        <th>Клиент</th>
+        <th>Товары</th>
+        <th>Сумма, ₽</th>
+        <th>Оплата</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sale in sales %}
+      <tr data-id="{{ sale.id }}">
+        <td><input type="checkbox" class="row-check" value="{{ sale.id }}"></td>
+        <td>{{ sale.created_at|date:"H:i:s" }}</td>
+        <td>
+          {% if sale.cashier %}
+            {{ sale.cashier.get_full_name|default:sale.cashier.username }}
+          {% else %}—{% endif %}
+        </td>
+        <td>{{ sale.customer.name|default:"—" }}</td>
+        <td>
+          <ul style="margin:0;padding-left:16px;">
+            {% for item in sale.items.all %}
+              <li>{{ item.product.name }} — {{ item.quantity }} × {{ item.price }} ₽</li>
+            {% endfor %}
+          </ul>
+        </td>
+        <td><b>{{ sale.total }}</b></td>
+        <td>{{ sale.payment_method|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;">Продаж за сегодня нет</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+/* ===== Массовое удаление продаж ===== */
+const qs = (s, r=document)=>r.querySelector(s);
+const qsa = (s, r=document)=>[...r.querySelectorAll(s)];
+
+function getCookie(name) {
+  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return m ? m.pop() : '';
+}
+const csrftoken = getCookie('csrftoken');
+
+const table = qs('#salesTable');
+const checkAll = qs('#checkAll');
+const deleteBtn = qs('#deleteSelected');
+const selCount = qs('#selCount');
+
+function selectedIds(){
+  return qsa('.row-check:checked', table).map(i=>i.value);
+}
+function updateUI(){
+  const count = selectedIds().length;
+  selCount.textContent = count + ' выбрано';
+  const hasPerm = deleteBtn.dataset.hasPerm === '1';
+  deleteBtn.disabled = !hasPerm || count === 0;
+  deleteBtn.style.opacity = deleteBtn.disabled ? .55 : 1;
+  deleteBtn.style.cursor = deleteBtn.disabled ? 'not-allowed' : 'pointer';
+}
+
+checkAll?.addEventListener('change', e=>{
+  const on = e.target.checked;
+  qsa('.row-check', table).forEach(ch=>{ ch.checked = on; });
+  updateUI();
+});
+
+table?.addEventListener('change', (e)=>{
+  if(e.target.classList.contains('row-check')){
+    if(!e.target.checked) checkAll.checked = false;
+    updateUI();
+  }
+});
+
+deleteBtn?.addEventListener('click', async ()=>{
+  const hasPerm = deleteBtn.dataset.hasPerm === '1';
+  if(!hasPerm){
+    alert('Нет права на удаление продаж (sales.delete_sale). Обратитесь к администратору.');
+    return;
+  }
+  const ids = selectedIds();
+  if(!ids.length) return;
+
+  if(!confirm(`Удалить выбранные продажи (${ids.length} шт.)? Это действие нельзя отменить.`)) return;
+
+  try{
+    const url = "{% url 'reports:sale_delete_bulk' %}";
+    const res = await fetch(url, {
+      method:'POST',
+      headers: { 'X-CSRFToken': csrftoken, 'Content-Type':'application/json' },
+      body: JSON.stringify({ ids })
+    });
+    const data = await res.json().catch(()=>({ok:false}));
+
+    if(res.ok && data.ok){
+      // убрать удалённые строки из таблицы
+      ids.forEach(id=>{
+        const tr = table.querySelector(`tr[data-id="${id}"]`);
+        if(tr) tr.remove();
+      });
+      checkAll.checked = false;
+      updateUI();
+    }else{
+      alert('❌ Не удалось удалить: ' + (data.error || res.status));
+    }
+  }catch(err){
+    alert('❌ Ошибка сети');
+    console.error(err);
+  }
+});
+
+// начальная инициализация
+updateUI();
+</script>
+{% endblock %}

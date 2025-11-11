@@ -1,0 +1,23 @@
+# Python / Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# venv
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Django артефакты
+db.sqlite3
+media/
+staticfiles/
+*.sqlite3
+
+# Mac
+.DS_Store

@@ -1,0 +1,130 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Сайтофис — POS</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<header class="site-header glass-strong">
+  <div class="site-header-inner">
+    <!-- БРЕНД слева -->
+    <a class="brand" href="/">
+      <img src="{% static 'img/logo.gif' %}" alt="" class="brand-logo" decoding="async">
+      <span>Сайтофис POS</span>
+    </a>
+
+    <!-- МЕНЮ строго по центру -->
+    <nav class="nav">
+      <a href="/products/"  class="{% if request.path|slice:':9' == '/products' %}active{% endif %}">Товары</a>
+      <a href="/customers/" class="{% if request.path|slice:':10' == '/customers' %}active{% endif %}">Клиенты</a>
+      <a href="/sales/checkout/" class="{% if request.path|slice:':6' == '/sales' %}active{% endif %}">Продажи</a>
+      <a href="/reports/daily/" class="{% if request.path|slice:':8' == '/reports' %}active{% endif %}">Отчёты</a>
+      <a href="/admin/" target="_blank">Админка</a>
+    </nav>
+
+    <!-- ПРАВАЯ пуста — держит симметрию сетки -->
+    <div class="header-right"></div>
+  </div>
+</header>
+
+<main class="container main-wrap glass" style="margin-top:24px;padding:16px;border-radius:18px;">
+  {% if messages %}
+    <div class="messages">{% for m in messages %}<div class="msg">{{ m }}</div>{% endfor %}</div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">© {% now 'Y' %} Сайтофис POS</div>
+</footer>
+
+<script>
+/* 3D Tilt hover — «вес» к курсору.
+   Работает для .btn, .nav a, .thumb-lg (можно расширять список).
+   Учитывает Safari, отключается на тач-экранах и когда включено Reduced Motion. */
+
+(function () {
+  const isTouch = matchMedia("(pointer: coarse)").matches;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (isTouch || reduced) return;
+
+  // Какие элементы анимируем
+  const targets = document.querySelectorAll('.btn, .nav a, .thumb-lg');
+
+  // Параметры эффекта
+  const MAX_TILT = 10;       // градусов
+  const MAX_POP = 10;        // px по оси Z
+  const SHADOW_BASE = 0.25;  // интенсивность тени
+  const EASING_OUT_MS = 120; // время возврата
+
+  targets.forEach(el => {
+    // подготовка классов (для эффектов «свечения» и тени)
+    el.classList.add('tilt','tilt-pop');
+
+    // если у элемента нет position, делаем relative для псевдоэлемента ::after
+    const cs = getComputedStyle(el);
+    if (cs.position === 'static') el.style.position = 'relative';
+    el.style.transformPerspective = '800px';
+
+    let frame = null;
+
+    function onMove(e){
+      const rect = el.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const cx = px / rect.width;   // 0..1
+      const cy = py / rect.height;  // 0..1
+
+      // сохраняем в CSS-переменные для подсветки ::after
+      el.style.setProperty('--mx', (cx*100).toFixed(2) + '%');
+      el.style.setProperty('--my', (cy*100).toFixed(2) + '%');
+
+      // направление: по X наклоняем вокруг оси Y, по Y — вокруг оси X
+      const tiltX = ( (cy - 0.5) * -2 ) * MAX_TILT; // вверх/вниз
+      const tiltY = ( (cx - 0.5) *  2 ) * MAX_TILT; // влево/вправо
+      const pop  = (1 - Math.hypot(cx - .5, cy - .5) * 1.4); // ближе к центру — больше pop
+      const z = Math.max(0, pop) * MAX_POP;
+
+      // тень смещаем противоположно «свету»
+      const sx = ((cx - .5) * 18).toFixed(1);
+      const sy = ((cy - .5) * 22).toFixed(1);
+      const alpha = (SHADOW_BASE + pop * .25).toFixed(2);
+
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(()=>{
+        el.style.transform = `translateZ(${z}px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+        el.style.boxShadow =
+          `0 ${sy}px ${22+z}px rgba(0,0,0,${alpha}), 0 4px 10px rgba(0,0,0,.25)`;
+      });
+    }
+
+    function onEnter(){
+      el.classList.add('tilt-raise');
+      el.style.transition = 'transform 90ms ease, box-shadow 120ms ease';
+    }
+
+    function onLeave(){
+      el.classList.remove('tilt-raise');
+      el.style.transition = `transform ${EASING_OUT_MS}ms ease, box-shadow ${EASING_OUT_MS}ms ease`;
+      el.style.transform = 'translateZ(0) rotateX(0deg) rotateY(0deg)';
+      el.style.boxShadow = '';
+      // убрать подсветку ::after плавно
+      el.style.removeProperty('--mx');
+      el.style.removeProperty('--my');
+    }
+
+    el.addEventListener('mousemove', onMove, {passive:true});
+    el.addEventListener('mouseenter', onEnter, {passive:true});
+    el.addEventListener('mouseleave', onLeave, {passive:true});
+    // для тач-симуляторов в десктопных браузерах
+    el.addEventListener('touchstart', onLeave, {passive:true});
+  });
+})();
+</script>
+
+</body>
+</html>

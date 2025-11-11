@@ -1,0 +1,406 @@
+/* =========================
+   Тёмная стеклянная тема (белые акценты)
+   ========================= */
+:root{
+  --bg: #0f1116;
+  --surface: #151922;
+  --surface-2: #1b2130;
+  --fg: #eef2f8;
+  --fg-dim: #b8c0cf;
+  --line: rgba(255,255,255,.10);
+
+  /* Белые акценты вместо синего */
+  --accent: #ffffff;
+  --accent-weak: rgba(255,255,255,.14);
+
+  /* Стекло */
+  --glass-bg: rgba(22,26,36,.42);
+  --glass-bg-strong: rgba(26,31,44,.58);
+  --glass-brd-lite: rgba(255,255,255,.14);
+  --glass-brd: rgba(255,255,255,.22);
+  --glass-shadow: 0 10px 35px rgba(0,0,0,.45);
+  --blur: 14px;
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+  color:var(--fg);
+  background:var(--bg);
+}
+
+.container{ max-width:1280px; margin:0 auto; padding:16px; }
+
+/* Утилиты стекла */
+.glass{
+  background:var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(115%) brightness(1.02);
+  backdrop-filter: blur(var(--blur)) saturate(115%) brightness(1.02);
+  border:1px solid var(--glass-brd-lite);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), var(--glass-shadow);
+}
+.glass-strong{
+  background:var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(120%) brightness(1.04);
+  backdrop-filter: blur(var(--blur)) saturate(120%) brightness(1.04);
+  border:1px solid var(--glass-brd);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), var(--glass-shadow);
+}
+
+/* =========================
+   Шапка: бренд слева, меню по центру (Safari-friendly)
+   ========================= */
+.site-header{
+  position:sticky; top:0; z-index:1000;
+  border-bottom:1px solid var(--glass-brd-lite);
+  background:rgba(12,14,20,.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.site-header-inner{
+  position:relative;
+  max-width:1280px; margin:0 auto;
+  display:flex; align-items:center; gap:16px;
+  padding:20px 24px;
+  min-height:78px;
+}
+.brand{
+  display:flex; align-items:center; gap:10px;
+  font-weight:800; letter-spacing:.2px; color:var(--fg); text-decoration:none;
+  position:relative; z-index:2;
+}
+.brand-logo{
+  width:64px; height:64px; object-fit:contain;
+  image-rendering:-webkit-optimize-contrast;
+  border-radius:12px;
+}
+
+/* Центрируем навигацию абсолютно */
+.nav{
+  position:absolute; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  max-width:calc(100% - 300px);
+  justify-content:center;
+}
+.nav a{
+  display:inline-block; white-space:nowrap; text-decoration:none; color:var(--fg);
+  padding:12px 18px; font-size:15px; border-radius:14px;
+  background:var(--glass-bg);
+  border:1px solid var(--glass-brd-lite);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), var(--glass-shadow);
+  transition: transform .06s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
+}
+.nav a:hover{ transform: translateY(-1px); }
+.nav a.active,
+.nav a:focus{
+  background:var(--accent-weak);
+  border-color: rgba(255,255,255,.6);
+  color:#ffffff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.14), var(--glass-shadow);
+}
+
+/* Основной блок */
+.main-wrap{ border-radius:18px; }
+
+/* Сообщения */
+.messages{ display:grid; gap:8px; margin-bottom:12px; }
+.msg{
+  padding:10px 12px; border-radius:12px;
+  background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff;
+}
+
+/* =========================
+   Карточки/таблицы
+   ========================= */
+.card{
+  border-radius:16px; padding:12px;
+  background: var(--surface);
+  border:1px solid var(--glass-brd-lite);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 14px 34px rgba(0,0,0,.5);
+}
+table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
+thead th{
+  text-align:left; padding:8px 10px; color:#aab3c5; font-weight:600;
+}
+tbody tr{
+  background: var(--surface-2);
+  border:1px solid var(--glass-brd-lite);
+}
+tbody td{ padding:12px; }
+tbody tr:hover{
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+  border-color: var(--glass-brd);
+}
+
+/* Превью товаров */
+.thumb-lg{ width:110px; height:110px; object-fit:cover; border-radius:12px; }
+.thumb-lg--placeholder{
+  width:110px; height:110px; border:1px dashed var(--line);
+  border-radius:12px; display:flex; align-items:center; justify-content:center; color:#8d96aa;
+}
+
+/* =========================
+   Формы/кнопки — белые акценты
+   ========================= */
+.btn{
+  display:inline-block; border-radius:12px; padding:12px 16px; cursor:pointer; color:#fff;
+  background: var(--surface-2);
+  border:1px solid var(--glass-brd-lite);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), var(--glass-shadow);
+  transition: transform .06s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+}
+.btn:hover{ transform: translateY(-1px); }
+.btn-primary{
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.84));
+  border-color: rgba(255,255,255,.9);
+  color:#0c0f16;
+}
+
+input[type="text"], input[type="number"], input[type="password"], input[type="email"],
+input[type="search"], select, textarea{
+  width:100%; color:var(--fg);
+  background: #141924;
+  border:1px solid var(--glass-brd-lite);
+  border-radius:12px; padding:10px 12px; outline:none;
+  -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur));
+}
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(255,255,255,.7);
+  box-shadow:0 0 0 3px rgba(255,255,255,.16);
+}
+
+/* Поисковая плашка */
+.searchbar{
+  display:flex; gap:10px; align-items:center; margin-bottom:12px;
+  padding:10px; border-radius:14px;
+  background: var(--glass-bg);
+  border:1px solid var(--glass-brd-lite);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03), var(--glass-shadow);
+}
+
+/* Бейджи — светлые */
+.badge{
+  display:inline-block; padding:3px 8px; border-radius:999px;
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.38);
+  color:#0e1320; font-size:12px;
+}
+
+/* =========================
+   Модалка — всегда по центру экрана
+   ========================= */
+.modal{
+  position: fixed;           /* не зависит от прокрутки */
+  inset: 0;
+  z-index: 2000;
+
+  /* центрирование карточки */
+  display: grid;
+  place-items: center;
+
+  /* внутренние поля, чтобы не прилипать к краям */
+  padding: max(8vh, 24px) 16px;
+
+  /* если контент слишком длинный — прокрутка внутри модалки */
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.modal.hidden{ display:none; }
+
+/* Затемнение под модалкой */
+.modal__overlay{
+  position: fixed;           /* перекрывает весь вьюпорт */
+  inset: 0;
+  z-index: 0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(2px);
+}
+
+/* Карточка модалки по центру */
+.modal__card{
+  position: relative;
+  z-index: 1;
+
+  width: min(720px, 100%);
+  max-height: calc(100dvh - max(8vh, 24px) * 2);
+  margin: 0;                 /* важно: без внешних отступов */
+  overflow: auto;            /* внутренняя прокрутка */
+  -webkit-overflow-scrolling: touch;
+
+  /* визуальная часть как была */
+  border-radius:18px;
+  background: rgba(20,24,34,.92);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow: 0 20px 60px rgba(0,0,0,.55);
+}
+.modal__header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+
+/* Сетка в модалке */
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:700px){ .grid2{ grid-template-columns:1fr; } }
+
+@media (max-width: 480px){
+  .modal{ padding:16px; }
+  .modal__card{ max-height: calc(100dvh - 32px); }
+}
+
+/* =========================
+   Выпадающее меню категорий (под поиском)
+   ========================= */
+.cat-drop{ position:relative; }
+.cat-drop__menu{
+  position:absolute; left:0; top:100%; margin-top:6px; min-width:260px; max-height:280px; overflow:auto;
+  background: rgba(23,27,38,.92);
+  -webkit-backdrop-filter: blur(8px) saturate(120%); backdrop-filter: blur(8px) saturate(120%);
+  border:1px solid var(--glass-brd);
+  border-radius:12px; padding:8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  display:none;
+}
+.cat-drop__menu.show{ display:block; }
+.cat-drop__item{
+  display:block; width:100%; text-align:left;
+  padding:9px 12px; border-radius:10px; border:1px solid transparent;
+  background:transparent; color:var(--fg); cursor:pointer;
+}
+.cat-drop__item:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.35);
+  color:#ffffff;
+}
+
+/* =========================
+   Футер
+   ========================= */
+.site-footer{ margin-top:20px; border-top:1px solid var(--line); }
+.site-footer-inner{ max-width:1280px; margin:0 auto; padding:16px; color:var(--fg-dim); }
+
+/* =========================
+   Адаптив
+   ========================= */
+@media (max-width:900px){
+  .site-header-inner{ padding:16px 16px; min-height:72px; }
+  .nav{ position:static; transform:none; justify-content:center; max-width:100%; }
+}
+@media (max-width:600px){
+  .nav{ gap:8px; }
+  .nav a{ padding:10px 14px; font-size:14px; border-radius:14px; }
+}
+
+/* ===== 3D tilt / hover physics ===== */
+.tilt {
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease,
+    background 140ms ease;
+  perspective: 800px; /* для потомков с translateZ */
+}
+
+.tilt-pop::after {
+  /* мягкое «свечение» сверху — создаёт ощущение объёма */
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(220px 120px at var(--mx,50%) var(--my,0%), rgba(255,255,255,.18), transparent 60%);
+  opacity: 0; transition: opacity 140ms ease;
+}
+.tilt:hover::after { opacity: .85; }
+
+.tilt-raise {
+  box-shadow:
+    0 18px 30px rgba(0,0,0,.35),
+    0 4px 10px rgba(0,0,0,.25);
+}
+
+/* На очень слабых девайсах можно отключить резкие эффекты */
+@media (prefers-reduced-motion: reduce){
+  .tilt { transition: none !important; }
+}
+
+/* Для Safari: небольшое сглаживание перерисовок */
+.tilt, .tilt * { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+
+/* ===== Верхний бар как стеклянный «остров» ===== */
+.site-header{
+  position: sticky;
+  top: 10px;                 /* небольшой отступ, чтобы «плавал» */
+  z-index: 1000;
+  background: transparent;   /* фон у родителя прозрачный */
+  border: 0;                 /* без нижней линии у родителя */
+}
+
+/* Контент хедера — сам «остров» */
+.site-header-inner{
+  position: relative;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  backdrop-filter: blur(12px) saturate(120%);
+  border: 1px solid var(--glass-brd);
+  box-shadow: var(--glass-shadow);
+  border-radius: 20px;
+
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  min-height: 78px;
+
+  overflow: hidden;
+}
+
+/* Бренд слева */
+.brand{
+  display:flex; align-items:center; gap:10px;
+  font-weight:800; letter-spacing:.2px; color:var(--fg); text-decoration:none;
+  position:relative; z-index:2;
+}
+.brand-logo{
+  width:64px; height:64px; object-fit:contain;
+  image-rendering:-webkit-optimize-contrast;
+  border-radius:12px;
+}
+
+/* Меню по центру, устойчиво к Safari */
+.nav{
+  position:absolute; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  max-width:calc(100% - 300px);
+  justify-content:center;
+}
+.header-right{ margin-left:auto; } /* на будущее */
+
+.nav a{
+  display:inline-block; white-space:nowrap; text-decoration:none; color:var(--fg);
+  padding:12px 18px; font-size:15px; border-radius:14px;
+  background:var(--glass-bg);
+  border:1px solid var(--glass-brd-lite);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), var(--glass-shadow);
+  transition: transform .06s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
+}
+.nav a:hover{ transform: translateY(-1px); }
+.nav a.active,
+.nav a:focus{
+  background:var(--accent-weak);
+  border-color: rgba(255,255,255,.6);
+  color:#ffffff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.14), var(--glass-shadow);
+}
+
+/* Адаптив: на узких — обычный поток */
+@media (max-width:900px){
+  .site-header{ top: 8px; }
+  .site-header-inner{ padding:16px 16px; min-height:72px; }
+  .nav{ position:static; transform:none; justify-content:center; max-width:100%; }
+}
+@media (max-width:600px){
+  .nav{ gap:8px; }
+  .nav a{ padding:10px 14px; font-size:14px; border-radius:14px; }
+}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block content %}
+<h1>Оформление продажи</h1>
+<div class="card"><form method="post">{% csrf_token %}
+<input type="hidden" name="sale_id" value="{{ sale.id }}"/>
+<fieldset><legend>Шапка</legend>{{ form.as_p }}</fieldset>
+<fieldset><legend>Позиции</legend>{{ formset.management_form }}
+<table><thead><tr><th>Товар</th><th>Кол-во</th><th>Цена</th><th>Сумма</th><th></th></tr></thead><tbody>
+{% for f in formset.forms %}<tr><td>{{ f.product }}</td><td>{{ f.qty }}</td><td>{{ f.price }}</td><td>{{ f.subtotal }}</td><td>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td></tr>{% endfor %}
+</tbody></table>
+<p><a class="btn" href="#" onclick="addForm();return false;">+ Добавить строку</a></p></fieldset>
+<button class="btn btn-primary" type="submit">Пробить чек</button>
+</form></div>
+<script>
+function addForm(){const totalForms=document.getElementById('id_items-TOTAL_FORMS');const idx=parseInt(totalForms.value,10);
+const tbody=document.querySelector('table tbody');const first=tbody.querySelector('tr');const row=first.cloneNode(true);
+row.querySelectorAll('input,select').forEach(el=>{if(el.name){el.name=el.name.replace(/items-\d+-/,'items-'+idx+'-');}
+if(el.id){el.id=el.id.replace(/id_items-\d+-/,'id_items-'+idx+'-');} if(el.tagName==='INPUT'){el.value='';} if(el.tagName==='SELECT'){el.selectedIndex=0;}});
+tbody.appendChild(row); totalForms.value=idx+1;}
+</script>
+{% endblock %}

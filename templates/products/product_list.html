@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Товары</h1>
+
+<form method="get" class="searchbar" autocomplete="off">
+  <!-- обернули инпут в контейнер с меню категорий -->
+  <div class="cat-drop" style="flex:1">
+    {{ form.q }}
+    <datalist id="product_suggestions"></datalist>
+    <!-- выпадающее меню категорий -->
+    <div id="catMenu" class="cat-drop__menu">
+      <button type="button" class="cat-drop__item" data-value="">Все категории</button>
+      {% for c in categories %}
+        <button type="button" class="cat-drop__item" data-value="{{ c.name }}">{{ c.name }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <button class="btn btn-primary" type="submit">Искать</button>
+  <a class="btn" href=".">Сброс</a>
+</form>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Фото</th>
+        <th>SKU</th>
+        <th>Наименование</th>
+        <th>Категория</th>
+        <th>Цена</th>
+        <th>Ост.</th>
+        <th>Статус</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr class="row-click" data-id="{{ p.id }}">
+        <td>
+          {% if p.image %}
+            <img src="{{ p.image.url }}" alt="" class="thumb-lg">
+          {% else %}
+            <div class="thumb-lg--placeholder">—</div>
+          {% endif %}
+        </td>
+        <td>{{ p.sku }}</td>
+        <td class="linklike">{{ p.name }}</td>
+        <td>{{ p.category.name }}</td>
+        <td>{{ p.price }}</td>
+        <td>{{ p.stock }}</td>
+        <td>{% if p.is_active %}<span class="badge">активен</span>{% else %}<span class="badge">скрыт</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">Ничего не найдено</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal hidden">
+  <div class="modal__overlay"></div>
+  <div class="modal__card">
+    <div class="modal__header">
+      <h3 id="modalTitle">Товар</h3>
+      <button id="modalClose" class="btn">✕</button>
+    </div>
+    <form id="productForm" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="grid2">
+        <p>
+          <label>Наименование</label>
+          <input type="text" name="name" required>
+        </p>
+        <p>
+          <label>Категория</label>
+          <select name="category" required></select>
+        </p>
+        <p>
+          <label>Цена</label>
+          <input type="number" name="price" step="0.01" required>
+        </p>
+        <p>
+          <label>Остаток</label>
+          <input type="number" name="stock" min="0" required>
+        </p>
+        <p>
+          <label>Активен</label>
+          <select name="is_active">
+            <option value="true">Да</option>
+            <option value="false">Нет</option>
+          </select>
+        </p>
+        <p>
+          <label>Фото</label>
+          <input type="file" name="image" accept="image/*">
+          <small class="muted">Если не менять — оставь пустым.</small>
+        </p>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+        <img id="previewImg" src="" alt="" style="width:110px;height:110px;object-fit:cover;border-radius:12px;display:none;">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <button class="btn" type="button" id="btnImageDelete">Удалить фото</button>
+        <button class="btn" type="button" id="modalCancel">Отмена</button>
+      </div>
+
+      <input type="hidden" name="__id" value="">
+    </form>
+    <div id="modalMsg" style="margin-top:8px;"></div>
+  </div>
+</div>
+
+<style>
+  .linklike{cursor:pointer;text-decoration:underline}
+  .row-click{cursor:pointer}
+  .modal.hidden{display:none}
+  .modal{position:fixed;inset:0;z-index:2000}
+  .modal__overlay{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(2px)}
+  .modal__card{position:relative;background:var(--glass-bg-strong);border:1px solid var(--glass-brd);border-radius:18px;max-width:720px;margin:8vh auto;padding:16px;box-shadow:var(--glass-shadow)}
+  .modal__header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:700px){.grid2{grid-template-columns:1fr}}
+
+  .thumb-lg{ width:110px;height:110px;object-fit:cover;border-radius:12px; }
+  .thumb-lg--placeholder{
+    width:110px;height:110px;border:1px dashed var(--line);
+    border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8d96aa;
+  }
+
+  .cat-drop{ position:relative; }
+  .cat-drop__menu{
+    position:absolute; left:0; top:100%; margin-top:6px; min-width:260px; max-height:280px; overflow:auto;
+    background: rgba(23,27,38,.92);
+    -webkit-backdrop-filter: blur(8px) saturate(120%); backdrop-filter: blur(8px) saturate(120%);
+    border:1px solid var(--glass-brd);
+    border-radius:12px; padding:8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    display:none;
+  }
+  .cat-drop__menu.show{ display:block; }
+  .cat-drop__item{
+    display:block; width:100%; text-align:left;
+    padding:9px 12px; border-radius:10px; border:1px solid transparent;
+    background:transparent; color:inherit; cursor:pointer;
+  }
+  .cat-drop__item:hover{ background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.35); }
+</style>
+
+<script>
+const qs = (s, r=document)=>r.querySelector(s);
+const qsa = (s, r=document)=>[...r.querySelectorAll(s)];
+const modal = qs('#modal');
+const modalClose = qs('#modalClose');
+const modalCancel = qs('#modalCancel');
+const productForm = qs('#productForm');
+const modalMsg = qs('#modalMsg');
+const previewImg = qs('#previewImg');
+const btnImageDelete = qs('#btnImageDelete');
+let currentId = null;
+
+function openModal(){
+  modal.classList.remove('hidden');
+  // не запрещаем скролл, модалка фиксированная и центрируется
+}
+function closeModal(){
+  modal.classList.add('hidden');
+  modalMsg.textContent='';
+  productForm.reset();
+  previewImg.style.display='none';
+}
+
+modalClose.addEventListener('click', closeModal);
+modalCancel.addEventListener('click', closeModal);
+qs('.modal__overlay', modal).addEventListener('click', closeModal);
+
+qsa('tr.row-click').forEach(tr=>{
+  tr.addEventListener('click', async ()=>{
+    const id = tr.dataset.id;
+    currentId = id;
+    const res = await fetch(`/products/api/${id}/`);
+    if(!res.ok){ alert('Не удалось загрузить товар'); return; }
+    const data = await res.json();
+    const p = data.product;
+    qs('#modalTitle').textContent = `Товар #${p.id} — ${p.sku}`;
+    // категории
+    const catSel = productForm.category;
+    catSel.innerHTML = '';
+    data.product.categories.forEach(c=>{
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      if(c.id === p.category) opt.selected = true;
+      catSel.appendChild(opt);
+    });
+    productForm.name.value = p.name;
+    productForm.price.value = p.price;
+    productForm.stock.value = p.stock;
+    productForm.is_active.value = p.is_active ? 'true' : 'false';
+    productForm.__id.value = p.id;
+    if(p.image_url){
+      previewImg.src = p.image_url;
+      previewImg.style.display='block';
+      btnImageDelete.disabled = false;
+    } else {
+      previewImg.style.display='none';
+      btnImageDelete.disabled = true;
+    }
+    openModal();
+  });
+});
+
+// csrf cookie helper
+function getCookie(name) {
+  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return m ? m.pop() : '';
+}
+const csrftoken = getCookie('csrftoken');
+
+// сохранение товара
+productForm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(!currentId) return;
+  const fd = new FormData(productForm);
+  fd.set('is_active', fd.get('is_active') === 'true' ? 'true' : 'false');
+  modalMsg.textContent = 'Сохраняю...';
+  const res = await fetch(`/products/api/${currentId}/update/`, {
+    method:'POST',
+    headers: { 'X-CSRFToken': csrftoken },
+    body: fd
+  });
+  const data = await res.json().catch(()=>({ok:false}));
+  if(res.ok && data.ok){
+    modalMsg.textContent = '✅ Сохранено';
+
+    // обновим превью + кнопку удаления
+    if (data.image_url){
+      previewImg.src = data.image_url;
+      previewImg.style.display='block';
+      btnImageDelete.disabled = false;
+    } else {
+      previewImg.style.display='none';
+      btnImageDelete.disabled = true;
+    }
+
+    // Мягко обновить строку в таблице
+    const tr = document.querySelector(`tr.row-click[data-id="${currentId}"]`);
+    if(tr){
+      tr.children[2].textContent = productForm.name.value;
+      tr.children[3].textContent = productForm.category.options[productForm.category.selectedIndex].textContent;
+      tr.children[4].textContent = productForm.price.value;
+      tr.children[5].textContent = productForm.stock.value;
+      tr.children[6].innerHTML = (productForm.is_active.value === 'true') ? '<span class="badge">активен</span>' : '<span class="badge">скрыт</span>';
+      const imgCell = tr.children[0];
+      if (data.image_url) {
+        imgCell.innerHTML = `<img src="${data.image_url}" class="thumb-lg">`;
+      } else {
+        imgCell.innerHTML = `<div class="thumb-lg--placeholder">—</div>`;
+      }
+    }
+
+    setTimeout(closeModal, 700);
+  } else {
+    modalMsg.textContent = '❌ Ошибка';
+    console.log('errors', data);
+    alert('Проверь поля. Нужно право "change_product".');
+  }
+});
+
+// Удаление фото
+if (btnImageDelete){
+  btnImageDelete.addEventListener('click', async ()=>{
+    if (!currentId) return;
+    if (!confirm('Удалить фото у этого товара?')) return;
+
+    const res = await fetch(`/products/api/${currentId}/image/delete/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken }
+    });
+    const data = await res.json().catch(()=>({ok:false}));
+    if (res.ok && data.ok){
+      // превью прячем
+      previewImg.style.display='none';
+      previewImg.removeAttribute('src');
+      btnImageDelete.disabled = true;
+
+      // обновим строку таблицы
+      const tr = document.querySelector(`tr.row-click[data-id="${currentId}"]`);
+      if (tr) {
+        const imgCell = tr.children[0];
+        imgCell.innerHTML = `<div class="thumb-lg--placeholder">—</div>`;
+      }
+      alert('Фото удалено');
+    } else {
+      alert('Не удалось удалить фото');
+      console.log('image_delete_error', data);
+    }
+  });
+}
+
+// Автоподсказки поиска + меню категорий
+const qInput = document.getElementById('id_q');
+const datalistId = 'product_suggestions';
+if(qInput){
+  qInput.setAttribute('list', datalistId);
+  let t = null;
+  qInput.addEventListener('input', ()=>{
+    clearTimeout(t);
+    const val = qInput.value.trim();
+    if(!val){ return; }
+    t = setTimeout(async ()=>{
+      const res = await fetch(`/products/autocomplete/?q=${encodeURIComponent(val)}`);
+      if(!res.ok) return;
+      const {results} = await res.json();
+      const dl = document.getElementById(datalistId) || (()=>{ const el=document.createElement('datalist'); el.id=datalistId; qInput.parentNode.appendChild(el); return el;})();
+      dl.innerHTML = results.map(r=>`<option value="${r.label}">`).join('');
+    }, 200);
+  });
+
+  const catMenu = document.getElementById('catMenu');
+  qInput.addEventListener('focus', ()=> { catMenu?.classList.add('show'); });
+  qInput.addEventListener('blur', ()=> { setTimeout(()=>catMenu?.classList.remove('show'), 150); });
+
+  catMenu?.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.cat-drop__item');
+    if (!btn) return;
+    const val = btn.dataset.value || '';
+    qInput.value = val;
+    qInput.form?.submit();
+  });
+}
+</script>
+{% endblock %}
