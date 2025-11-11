@@ -1,14 +1,12 @@
-# Сайтофис POS (Auto-setup v2)
-✔ Добавлены **миграции** для apps (products, customers, sales)
-✔ `post_migrate` ждёт создания таблиц и только потом заливает демо-данные/дизайн/пользователей
+ py -m venv .venv
 
-## Старт
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+.\.venv\Scripts\activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python manage.py migrate    # авто-заполнение произойдёт безопасно
-python manage.py runserver
-```
-Логины: admin/admin12345, seller/seller123
+pip install -r requirements.txt
+python manage.py migrate
+
+
+
+ python manage.py runserver
+
+daphne -b 127.0.0.1 -p 8000 taxi_dispatch.asgi:application

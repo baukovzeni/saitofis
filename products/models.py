@@ -1,25 +1,26 @@
+# products/models.py
 from django.db import models
+from django.core.validators import FileExtensionValidator   # <-- ДОБАВИЛИ
 
 class Category(models.Model):
     name = models.CharField(max_length=120, unique=True)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
-    class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
     def __str__(self): return self.name
 
 class Product(models.Model):
-    sku = models.CharField('Артикул', max_length=64, unique=True)
-    name = models.CharField('Наименование', max_length=200)
-    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products')
-    price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
-    stock = models.PositiveIntegerField('Остаток', default=0)
-    is_active = models.BooleanField('Активен', default=True)
-    image = models.ImageField('Фото', upload_to='product_photos/', blank=True, null=True)  # ← NEW
-    image = models.ImageField(upload_to='product_photos/', null=True, blank=True)
+    sku       = models.CharField("Артикул", max_length=50, unique=True)
+    name      = models.CharField("Название", max_length=200)
+    category  = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    price     = models.DecimalField("Цена", max_digits=10, decimal_places=2, default=0)
+    stock     = models.IntegerField("Остаток", default=0)
+    is_active = models.BooleanField("Активен", default=True)
 
-    class Meta:
-        ordering = ['name']
-        verbose_name = 'Товар'
-        verbose_name_plural = 'Товары'
-    def __str__(self): return f"{self.name} ({self.sku})"
+    # ВМЕСТО ImageField — FileField, Pillow не требуется
+    image = models.FileField(
+        "Фото",
+        upload_to="product_photos/",
+        blank=True, null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif', 'webp'])]
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.sku})"
